@@ -4,6 +4,6 @@ go 1.12
 
 require (
 	github.com/aws/aws-lambda-go v1.17.0
-	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/stretchr/testify v1.6.1
 )

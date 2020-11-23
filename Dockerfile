@@ -17,7 +17,7 @@ COPY --from=builder /app/main ./
 RUN chmod +x ./main
 
 # Configurar el puerto de escucha para la aplciación.
-EXPOSE 8082
+EXPOSE 8083
 
 # Ejecutar API
 CMD ["./main"]
