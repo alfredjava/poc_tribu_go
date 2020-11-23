@@ -1,69 +1,70 @@
 package main
 
 import (
-	"time"
-	"github.com/gorilla/mux"
-	"net/http"
 	"encoding/json"
-	"strconv"
 	"log"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 // Nota ...
 type Nota struct {
-	Titulo string `json:"titulo"` 			
-	Descripcion string `json:"descripcion"`
+	Titulo      string    `json:"titulo"`
+	Descripcion string    `json:"descripcion"`
 	CreadaElDia time.Time `json:"creada_el_dia"`
 }
 
-var datosNotas = make (map[string]Nota)
+var datosNotas = make(map[string]Nota)
 var id int
+
 // Main ..
-func main (){
+func main() {
 	gorillarouter := mux.NewRouter().StrictSlash(false)
 
-	gorillarouter.HandleFunc("/api/notes",GetNoteHandler).Methods("GET")
-	gorillarouter.HandleFunc("/api/notes",PostNoteHandler).Methods("POST")
-	gorillarouter.HandleFunc("/api/notes/{id}",PutNoteHandler).Methods("PUT")
-	gorillarouter.HandleFunc("/api/notes/{id}",DeleteNoteHandler).Methods("DELETE")
+	gorillarouter.HandleFunc("/api/notes", GetNoteHandler).Methods("GET")
+	gorillarouter.HandleFunc("/api/notes", PostNoteHandler).Methods("POST")
+	gorillarouter.HandleFunc("/api/notes/{id}", PutNoteHandler).Methods("PUT")
+	gorillarouter.HandleFunc("/api/notes/{id}", DeleteNoteHandler).Methods("DELETE")
 
 	server := &http.Server{
-		Addr: ":8080",
-		Handler: gorillarouter,
-		ReadTimeout: 10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		Addr:           ":8083",
+		Handler:        gorillarouter,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	log.Println("Escuchando en localhost puerto 8080 ...")
+	log.Println("Escuchando en localhost puerto 8083 ...")
 	server.ListenAndServe()
-
-
 
 }
 
 // GetNoteHandler ...
-func GetNoteHandler(w http.ResponseWriter, r *http.Request){
+func GetNoteHandler(w http.ResponseWriter, r *http.Request) {
 	var notas []Nota
-	for _,valor := range datosNotas {
-		notas = append(notas,valor)
+	for _, valor := range datosNotas {
+		notas = append(notas, valor)
 	}
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	j, err := json.Marshal(notas)
 	if err != nil {
-		panic (err)
+		panic(err)
 	}
 	w.WriteHeader(http.StatusOK)
 
 	w.Write(j)
 
 }
+
 // PostNoteHandler ...
-func PostNoteHandler(w http.ResponseWriter, r *http.Request){
+func PostNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	var nota Nota
-	err:=json.NewDecoder(r.Body).Decode(&nota)
+	err := json.NewDecoder(r.Body).Decode(&nota)
 	if err != nil {
 		panic(err)
 	}
@@ -72,24 +73,22 @@ func PostNoteHandler(w http.ResponseWriter, r *http.Request){
 	k := strconv.Itoa(id)
 	datosNotas[k] = nota
 
-		w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	j, err := json.Marshal(nota)
 	if err != nil {
-		panic (err)
+		panic(err)
 	}
 
 	w.WriteHeader(http.StatusCreated)
-
 
 	w.Write(j)
 }
 
 // PutNoteHandler ...
-func PutNoteHandler(w http.ResponseWriter, r *http.Request){
+func PutNoteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	k := vars["id"]
-
 
 	var notaUpdate Nota
 	err := json.NewDecoder(r.Body).Decode(&notaUpdate)
@@ -97,37 +96,33 @@ func PutNoteHandler(w http.ResponseWriter, r *http.Request){
 		panic(err)
 	}
 
-
-	if nota, ok := datosNotas[k];ok {
+	if nota, ok := datosNotas[k]; ok {
 
 		notaUpdate.CreadaElDia = nota.CreadaElDia
 
-		delete (datosNotas,k)
+		delete(datosNotas, k)
 
 		datosNotas[k] = notaUpdate
 	} else {
-		
-	}
 
+	}
 
 	w.WriteHeader(http.StatusNoContent)
 
 }
 
 // DeleteNoteHandler ...
-func DeleteNoteHandler(w http.ResponseWriter, r *http.Request){
-	
+func DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
+
 	vars := mux.Vars(r)
 	k := vars["id"]
 
-	
-	if _, ok := datosNotas[k];ok {
-		delete (datosNotas,k)
+	if _, ok := datosNotas[k]; ok {
+		delete(datosNotas, k)
 	} else {
-		
+
 	}
 
-	
 	w.WriteHeader(http.StatusNoContent)
 
 }
